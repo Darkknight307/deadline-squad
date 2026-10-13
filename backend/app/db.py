@@ -46,7 +46,9 @@ def db_path() -> str:
 
 
 def connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(db_path())
+    # One connection per request, but FastAPI may open and close it on different
+    # threadpool threads, so the same-thread check must be off (see #4 QA).
+    conn = sqlite3.connect(db_path(), check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
