@@ -4,6 +4,7 @@ import { api, type Group, type User } from "./lib/api";
 import Sidebar from "./groups/Sidebar";
 import GroupHeader from "./groups/GroupHeader";
 import { parseHash, toHash, type View } from "./groups/route";
+import Board from "./deadlines/Board";
 
 export default function MainScreen({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [groups, setGroups] = useState<Group[] | null>(null);
@@ -69,9 +70,15 @@ export default function MainScreen({ user, onLogout }: { user: User; onLogout: (
               </p>
             </motion.div>
           ) : view.kind === "group" && group ? (
-            <GroupHeader group={group} />
+            <>
+              <GroupHeader group={group} />
+              <Board key={group.id} groupId={group.id} />
+            </>
           ) : (
-            <h2 className="text-3xl font-bold tracking-tight">All my groups</h2>
+            <>
+              <h2 className="text-3xl font-bold tracking-tight">All my groups</h2>
+              <Board key="all" groupId={null} />
+            </>
           )}
         </main>
       </div>
