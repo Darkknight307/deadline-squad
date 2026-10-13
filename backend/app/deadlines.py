@@ -91,6 +91,10 @@ def deadline_out(conn: sqlite3.Connection, row: sqlite3.Row, user_id: int) -> di
         "due_at": row["due_at"],
         "author": {"id": row["author_id"], "email": row["author_email"]},
         "can_edit": permissions.can_edit_deadline(conn, user_id, row),
+        "done": conn.execute(
+            "SELECT 1 FROM completions WHERE user_id = ? AND deadline_id = ?", (user_id, row["id"])
+        ).fetchone()
+        is not None,
     }
 
 
@@ -159,5 +163,22 @@ def update_deadline(deadline_id: int, data: DeadlinePatch, conn: Conn, user: Cur
 @router.delete("/deadlines/{deadline_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_deadline(deadline_id: int, conn: Conn, user: CurrentUser) -> Response:
     _editable(conn, user["id"], deadline_id)
+    conn.execute("DELETE FROM completions WHERE deadline_id = ?", (deadline_id,))
     conn.execute("DELETE FROM deadlines WHERE id = ?", (deadline_id,))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.put("/deadlines/{deadline_id}/done")
+def mark_done(deadline_id: int, conn: Conn, user: CurrentUser) -> dict:
+    get_visible_deadline(conn, user["id"], deadline_id)
+    conn.execute(
+        "INSERT OR IGNORE INTO completions (user_id, deadline_id) VALUES (?, ?)", (user["id"], deadline_id)
+    )
+    return {"done": True}
+
+
+@router.delete("/deadlines/{deadline_id}/done")
+def mark_not_done(deadline_id: int, conn: Conn, user: CurrentUser) -> dict:
+    get_visible_deadline(conn, user["id"], deadline_id)
+    conn.execute("DELETE FROM completions WHERE user_id = ? AND deadline_id = ?", (user["id"], deadline_id))
+    return {"done": False}

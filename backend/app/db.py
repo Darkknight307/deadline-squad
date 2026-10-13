@@ -38,6 +38,12 @@ CREATE TABLE IF NOT EXISTS deadlines (
     due_at TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
+CREATE TABLE IF NOT EXISTS completions (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    deadline_id INTEGER NOT NULL REFERENCES deadlines(id) ON DELETE CASCADE,
+    completed_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    PRIMARY KEY (user_id, deadline_id)
+);
 """
 
 
