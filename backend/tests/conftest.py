@@ -26,3 +26,17 @@ def create_group(client, token, name="CSS 314"):
     r = client.post("/api/groups", json={"name": name}, headers=auth_header(token))
     assert r.status_code == 201, r.text
     return r.json()
+
+
+def join(client, token, code):
+    r = client.post("/api/groups/join", json={"code": code}, headers=auth_header(token))
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+def add_deadline(client, token, group_id, **fields):
+    body = {"title": "Lab 3", "course": "CSS 314", "due_at": "2099-01-01T12:00:00+05:00", "description": ""}
+    body.update(fields)
+    r = client.post(f"/api/groups/{group_id}/deadlines", json=body, headers=auth_header(token))
+    assert r.status_code == 201, r.text
+    return r.json()

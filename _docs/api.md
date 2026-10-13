@@ -30,3 +30,16 @@ Emails are trimmed and lower-cased.
 | GET | `/api/groups/{id}` | ✓ | – | group + `members: [{id, email, is_owner}]`; non-member → `404` |
 
 Invite codes: 6 characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`.
+
+## Deadlines (#4)
+
+Deadline object: `{id, group_id, group_name, title, course, description, due_at, author: {id, email}, can_edit}`
+(`due_at` is UTC ISO-8601; `can_edit` = author or group owner).
+
+| Method | Path | Auth | Body | Response |
+|---|---|---|---|---|
+| POST | `/api/groups/{group_id}/deadlines` | member | `{title ≤120, course ≤60, due_at (with timezone), description? ≤2000}` | `201` deadline; non-member → `404` |
+| GET | `/api/groups/{group_id}/deadlines` | member | – | `{upcoming: [...soonest first], past: [...most recent first]}` |
+| GET | `/api/deadlines` | ✓ | – | same shape, from all my groups |
+| PATCH | `/api/deadlines/{id}` | author/owner | any subset of the fields | `200` deadline; member → `403`; non-member → `404` |
+| DELETE | `/api/deadlines/{id}` | author/owner | – | `204`; member → `403`; non-member → `404` |
