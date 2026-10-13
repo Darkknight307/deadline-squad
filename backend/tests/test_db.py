@@ -8,20 +8,12 @@ def test_request_connection_can_be_closed_on_another_thread(tmp_path, monkeypatc
     monkeypatch.setenv("DS_DB_PATH", str(tmp_path / "t.db"))
     init_db()
     gen = get_conn()
-    errors = []
 
     def open_conn():
-        conn = next(gen)
-        conn.execute("SELECT 1")
+        next(gen).execute("SELECT 1")
 
-    def close_conn():
-        try:
-            next(gen, None)
-        except Exception as exc:  # pragma: no cover - the failure we guard against
-            errors.append(exc)
-
-    for target in (open_conn, close_conn):
-        t = threading.Thread(target=target)
-        t.start()
-        t.join()
-    assert errors == []
+    worker = threading.Thread(target=open_conn)
+    worker.start()
+    worker.join()
+    # Teardown (commit + close) on the main thread, a different thread from the opener.
+    assert next(gen, "closed") == "closed"
