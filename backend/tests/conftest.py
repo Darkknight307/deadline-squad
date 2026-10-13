@@ -20,3 +20,9 @@ def register(client, email="ali@sdu.kz", password="password123"):
 
 def auth_header(token):
     return {"Authorization": f"Bearer {token}"}
+
+
+def create_group(client, token, name="CSS 314"):
+    r = client.post("/api/groups", json={"name": name}, headers=auth_header(token))
+    assert r.status_code == 201, r.text
+    return r.json()

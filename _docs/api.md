@@ -19,3 +19,14 @@ All endpoints are under `/api`. Authenticated endpoints need `Authorization: Bea
 | POST | `/api/auth/logout` | ✓ | – | `204`; the token stops working |
 
 Emails are trimmed and lower-cased.
+
+## Groups (#3)
+
+| Method | Path | Auth | Body | Response |
+|---|---|---|---|---|
+| POST | `/api/groups` | ✓ | `{name}` (1–60 chars) | `201 {id, name, invite_code, is_owner, member_count}` |
+| POST | `/api/groups/join` | ✓ | `{code}` (case-insensitive) | `200` group; `404 "No group with this code"`; joining twice is a no-op |
+| GET | `/api/groups` | ✓ | – | my groups, sorted by name |
+| GET | `/api/groups/{id}` | ✓ | – | group + `members: [{id, email, is_owner}]`; non-member → `404` |
+
+Invite codes: 6 characters from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789`.
