@@ -64,7 +64,9 @@ def _new_session(conn: sqlite3.Connection, user_id: int) -> str:
     return token
 
 
-Conn = Annotated[sqlite3.Connection, Depends(get_conn)]
+# scope="function": commit/close right after the endpoint returns, *before* the
+# response is sent, so clients never read stale data (see #5 QA).
+Conn = Annotated[sqlite3.Connection, Depends(get_conn, scope="function")]
 
 
 def _bearer(authorization: str | None) -> str:
